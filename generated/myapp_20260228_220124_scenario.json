@@ -1,0 +1,60 @@
+{
+  "test_name": "MyApp Scenario",
+  "defaults": {
+    "domain": "example.com",
+    "protocol": "https",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "threads": 100,
+    "ramp": 120,
+    "duration": 1800
+  },
+  "csv": {
+    "path": "data/users.csv",
+    "vars": "user,pass"
+  },
+  "timer_ms": 500,
+  "thread_groups": [
+    {
+      "name": "Primary Users",
+      "threads": 100,
+      "ramp": 120,
+      "duration": 1800,
+      "transactions": [
+        {
+          "name": "Launch",
+          "method": "GET",
+          "path": "/",
+          "assert": {
+            "field": "ResponseCode",
+            "pattern": "200"
+          }
+        },
+        {
+          "name": "Login",
+          "method": "POST",
+          "path": "/api/login",
+          "assert": {
+            "field": "ResponseCode",
+            "pattern": "200"
+          },
+          "params": {
+            "username": "${user}",
+            "password": "${pass}"
+          }
+        },
+        {
+          "name": "Logout",
+          "method": "GET",
+          "path": "/api/logout",
+          "assert": {
+            "field": "ResponseCode",
+            "pattern": "200"
+          }
+        }
+      ]
+    }
+  ],
+  "result_jtl": "D:\\VisualCode\\generated\\myapp_20260228_220124.jtl"
+}
