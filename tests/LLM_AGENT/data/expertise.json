@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "general-automation": {
+      "topic": "general IT automation",
+      "attempts": 1,
+      "successes": 0,
+      "blocks": 1,
+      "expertise_level": "new",
+      "last_used_at": "2026-04-30T23:05:49.985275+00:00",
+      "last_goal": "Open browser and search for error logs",
+      "knowledge_entries": 0
+    }
+  }
+}

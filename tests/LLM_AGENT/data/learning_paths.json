@@ -1,0 +1,30 @@
+{
+  "paths": {
+    "general-automation": {
+      "topic": "general IT automation",
+      "created_at": "2026-04-30T23:05:49.983229+00:00",
+      "stages": [
+        {
+          "name": "Fundamentals",
+          "objective": "Understand core concepts and vocabulary for general IT automation.",
+          "status": "pending"
+        },
+        {
+          "name": "Diagnostics",
+          "objective": "Learn safe read-only checks and signals for general IT automation.",
+          "status": "pending"
+        },
+        {
+          "name": "Remediation",
+          "objective": "Learn reversible fixes and escalation points for general IT automation.",
+          "status": "pending"
+        },
+        {
+          "name": "Verification",
+          "objective": "Learn how to confirm that general IT automation work is actually resolved.",
+          "status": "pending"
+        }
+      ]
+    }
+  }
+}
