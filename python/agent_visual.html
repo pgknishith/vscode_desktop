@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Performance Engineer Agent Visual</title>
+  <style>
+    :root {
+      --ink: #1e1a18;
+      --muted: #6e625c;
+      --paper: #f7f2ea;
+      --card: #fffdf8;
+      --line: #d8c5b7;
+      --brand: #0f5b52;
+      --brand-soft: #dbefe9;
+      --accent: #a83f1f;
+      --accent-soft: #f8e0d6;
+      --shadow: 0 10px 24px rgba(45, 30, 20, 0.12);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --mono: "IBM Plex Mono", "Consolas", "Courier New", monospace;
+      --sans: "Avenir Next", "Segoe UI", "Gill Sans", "Trebuchet MS", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 20% -10%, #f9d8bf 0%, transparent 60%),
+        radial-gradient(900px 500px at 85% 5%, #c9ece4 0%, transparent 62%),
+        var(--paper);
+      line-height: 1.45;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 16px 44px;
+    }
+
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      background: linear-gradient(120deg, #fff8ef 0%, #f5fbf9 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .kicker {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      background: var(--brand-soft);
+      color: var(--brand);
+      border: 1px solid #abd8ce;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 8px;
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    h1 {
+      margin-top: 10px;
+      font-size: clamp(1.7rem, 3.4vw, 2.7rem);
+    }
+
+    .lead {
+      margin: 10px 0 0;
+      max-width: 70ch;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .grid {
+      margin-top: 18px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+
+    .overview {
+      grid-column: span 7;
+    }
+
+    .status {
+      grid-column: span 5;
+      background: linear-gradient(165deg, #fff 0%, #f7f7f1 100%);
+    }
+
+    .status ul, .overview ul {
+      padding-left: 20px;
+      margin: 10px 0 0;
+    }
+
+    .flow {
+      margin-top: 20px;
+    }
+
+    .flow-track {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .step {
+      position: relative;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: #fff;
+      min-height: 150px;
+    }
+
+    .step::after {
+      content: "";
+      position: absolute;
+      right: -11px;
+      top: 50%;
+      width: 20px;
+      height: 2px;
+      background: var(--line);
+      transform: translateY(-50%);
+    }
+
+    .step:last-child::after {
+      display: none;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid #efbfae;
+      border-radius: 999px;
+      padding: 3px 8px;
+      margin-bottom: 8px;
+    }
+
+    .step h3 {
+      font-size: 1rem;
+    }
+
+    .step p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .commands {
+      margin-top: 20px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cmd {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .cmd h3 {
+      margin: 0;
+      padding: 10px 12px;
+      background: #fcf4ea;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.98rem;
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      background: #fff;
+      font-family: var(--mono);
+    }
+
+    .schema {
+      margin-top: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: #fff;
+    }
+
+    .schema h2 {
+      margin: 0;
+      padding: 10px 12px;
+      background: #eef8f5;
+      border-bottom: 1px solid var(--line);
+      font-size: 1.05rem;
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .assistant-box {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      width: min(370px, calc(100vw - 24px));
+      border: 1px solid #9ecbc0;
+      border-radius: 14px;
+      background: #fcfffe;
+      box-shadow: 0 16px 30px rgba(25, 38, 34, 0.22);
+      z-index: 20;
+      overflow: hidden;
+      animation: slideIn 300ms ease-out;
+    }
+
+    .assistant-head {
+      padding: 10px 12px;
+      background: linear-gradient(120deg, #ecf9f4 0%, #f4fbff 100%);
+      border-bottom: 1px solid #b6dbd2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .assistant-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #17473f;
+    }
+
+    .assistant-badge {
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid #9ecbc0;
+      border-radius: 999px;
+      padding: 2px 8px;
+      color: #1f5f54;
+      background: #ebf8f5;
+    }
+
+    .assistant-body {
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .assistant-note {
+      margin: 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .assistant-input {
+      width: 100%;
+      min-height: 74px;
+      resize: vertical;
+      border: 1px solid #c2d7d1;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .assistant-backend {
+      display: grid;
+      gap: 4px;
+    }
+
+    .assistant-backend label {
+      font-size: 0.76rem;
+      color: #2b5b53;
+      letter-spacing: 0.02em;
+    }
+
+    .assistant-backend input {
+      width: 100%;
+      border: 1px solid #c2d7d1;
+      border-radius: 9px;
+      padding: 7px 9px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: #173f39;
+      background: #fff;
+    }
+
+    .assistant-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .assistant-btn {
+      border: 1px solid #8bb9af;
+      border-radius: 9px;
+      padding: 6px 10px;
+      background: #edf8f4;
+      color: #12453d;
+      font-size: 0.82rem;
+      cursor: pointer;
+      font-family: var(--sans);
+    }
+
+    .assistant-btn:hover {
+      background: #dff2eb;
+    }
+
+    .assistant-btn.secondary {
+      background: #fff5ef;
+      border-color: #efbfae;
+      color: #8d351d;
+    }
+
+    .assistant-btn.primary {
+      background: #0f5b52;
+      border-color: #0f5b52;
+      color: #fff;
+    }
+
+    .assistant-btn.primary:hover {
+      background: #0d4a43;
+    }
+
+    .assistant-output {
+      margin: 0;
+      border: 1px solid #d0e5df;
+      background: #fbfffd;
+      border-radius: 10px;
+      padding: 10px;
+      min-height: 96px;
+      max-height: 210px;
+      overflow: auto;
+      font-size: 0.84rem;
+      white-space: pre-wrap;
+      font-family: var(--mono);
+    }
+
+    .assistant-status {
+      margin: 0;
+      font-size: 0.78rem;
+      color: #355c54;
+    }
+
+    .assistant-box.collapsed .assistant-body {
+      display: none;
+    }
+
+    .assistant-toggle {
+      border: 1px solid #97c7bc;
+      background: #fff;
+      color: #19463f;
+      border-radius: 8px;
+      padding: 2px 7px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .overview, .status {
+        grid-column: span 12;
+      }
+
+      .flow-track {
+        grid-template-columns: 1fr;
+      }
+
+      .step::after {
+        right: 50%;
+        top: auto;
+        bottom: -11px;
+        width: 2px;
+        height: 20px;
+        transform: translateX(50%);
+      }
+
+      .commands {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .assistant-box {
+        right: 10px;
+        top: 10px;
+        width: min(380px, calc(100vw - 20px));
+      }
+    }
+  </style>
+</head>
+<body>
+  <aside class="assistant-box" id="assistantBox" aria-label="Active helper agent">
+    <div class="assistant-head">
+      <div>
+        <div class="assistant-title">Active Helper Agent</div>
+        <div class="assistant-badge">Top-right</div>
+      </div>
+      <button class="assistant-toggle" id="assistantToggle" type="button">Hide</button>
+    </div>
+    <div class="assistant-body">
+      <p class="assistant-note">Ask scenario, chat with ChatGPT, and execute plan/script/run directly from this box.</p>
+      <div class="assistant-backend">
+        <label for="backendUrlInput">Backend Base URL (leave as auto unless needed)</label>
+        <input id="backendUrlInput" type="text" value="auto" placeholder="auto or http://127.0.0.1:8010">
+      </div>
+      <textarea class="assistant-input" id="assistantInput" placeholder="Example: Build a login + search scenario with 300 users for 30 minutes in staging"></textarea>
+      <div class="assistant-actions">
+        <button class="assistant-btn primary" type="button" id="createScriptsBtn">Create Scripts</button>
+        <button class="assistant-btn" type="button" id="runAllBtn">Run Full Lifecycle</button>
+        <button class="assistant-btn" type="button" id="chatReplyBtn">ChatGPT Reply</button>
+        <button class="assistant-btn" type="button" id="chatExecBtn">ChatGPT Execute</button>
+        <button class="assistant-btn secondary" type="button" id="copyBtn">Copy Output</button>
+      </div>
+      <pre class="assistant-output" id="assistantOutput">Agent ready.
+Type a scenario request and click "Create Scripts".</pre>
+      <p class="assistant-status" id="assistantStatus">Run backend: python agent_box_server.py --port 8010 (set OPENAI_API_KEY for ChatGPT buttons)</p>
+    </div>
+  </aside>
+
+  <div class="wrap">
+    <section class="hero">
+      <span class="kicker">Web Visual Format</span>
+      <h1>Performance Engineer Agent</h1>
+      <p class="lead">
+        Visual map of your end-to-end performance lifecycle agent for JMeter scripting, enhancement, load execution, and reporting.
+      </p>
+      <div class="grid">
+        <article class="card overview">
+          <h2>Agent Scope</h2>
+          <ul>
+            <li>Plan workload model and lifecycle checklist.</li>
+            <li>Generate base JMX and enhance existing JMX.</li>
+            <li>Build scenario-driven JMX from YAML or JSON.</li>
+            <li>Run local JMeter tests in non-GUI mode.</li>
+            <li>Produce Markdown or JSON SLA reports from JTL.</li>
+          </ul>
+        </article>
+        <aside class="card status">
+          <h2>Available Commands</h2>
+          <ul>
+            <li><code>create-plan</code></li>
+            <li><code>scenario-template</code></li>
+            <li><code>create-scenario</code></li>
+            <li><code>generate-jmx</code> / <code>enhance-jmx</code></li>
+            <li><code>run-local</code></li>
+            <li><code>report</code></li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="flow">
+      <h2>Lifecycle Flow</h2>
+      <div class="flow-track">
+        <article class="step">
+          <span class="tag">Step 1</span>
+          <h3>Plan</h3>
+          <p>Define users, ramp, duration, test types, and SLA targets in one lifecycle plan file.</p>
+        </article>
+        <article class="step">
+          <span class="tag">Step 2</span>
+          <h3>Template</h3>
+          <p>Create starter scenario YAML with defaults, CSV config, and transaction journey.</p>
+        </article>
+        <article class="step">
+          <span class="tag">Step 3</span>
+          <h3>Script</h3>
+          <p>Generate multi-transaction JMX with thread groups, samplers, headers, assertions, and extractors.</p>
+        </article>
+        <article class="step">
+          <span class="tag">Step 4</span>
+          <h3>Execute</h3>
+          <p>Run JMeter non-GUI load tests with runtime properties and collect JTL output.</p>
+        </article>
+        <article class="step">
+          <span class="tag">Step 5</span>
+          <h3>Report</h3>
+          <p>Compute p90, p95, p99, error rate, throughput, and SLA pass/fail by endpoint.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="commands">
+      <article class="cmd">
+        <h3>1) Plan + Scenario Scaffold</h3>
+        <pre>python -m perf_agent.agent create-plan --application "PetStore" --out performance_test_plan.md
+python -m perf_agent.agent scenario-template --out scenario.yaml --application "PetStore" --domain "petstore.octoperf.com"</pre>
+      </article>
+      <article class="cmd">
+        <h3>2) Build JMX from Scenario</h3>
+        <pre>python -m perf_agent.agent create-scenario --scenario scenario.yaml --out petstore_scenario.jmx</pre>
+      </article>
+      <article class="cmd">
+        <h3>3) Run Load Test</h3>
+        <pre>python -m perf_agent.agent run-local --jmx petstore_scenario.jmx --jtl petstore_results.jtl</pre>
+      </article>
+      <article class="cmd">
+        <h3>4) Generate SLA Report</h3>
+        <pre>python -m perf_agent.agent report --jtl petstore_results.jtl --out perf_report.md --sla-p95-ms 800 --sla-error-rate 1</pre>
+      </article>
+    </section>
+
+    <section class="schema">
+      <h2>Scenario YAML Shape</h2>
+      <pre>test_name: "PetStore Scenario"
+defaults:
+  domain: "petstore.octoperf.com"
+  protocol: "https"
+  headers:
+    Accept: "application/json"
+  threads: 50
+  ramp: 120
+  duration: 1800
+csv:
+  path: "data/users.csv"
+  vars: "user,pass"
+timer_ms: 500
+thread_groups:
+  - name: "Primary Users"
+    threads: 50
+    ramp: 120
+    duration: 1800
+    transactions:
+      - name: "Launch"
+        method: "GET"
+        path: "/"
+      - name: "Login"
+        method: "POST"
+        path: "/api/login"
+        params:
+          username: "${user}"
+          password: "${pass}"
+        assert:
+          field: "ResponseCode"
+          pattern: "200"
+        extractor:
+          ref: "sessionToken"
+          regex: "\"token\":\"(.*?)\""
+        think_time_ms: 1000
+result_jtl: "results.jtl"</pre>
+    </section>
+
+    <p class="footer-note">
+      Start backend-enabled mode with <code>python agent_box_server.py --port 8010</code> and open <code>http://localhost:8010/agent_visual.html</code>.
+    </p>
+  </div>
+  <script>
+    (function () {
+      const assistantBox = document.getElementById('assistantBox');
+      const assistantToggle = document.getElementById('assistantToggle');
+      const assistantInput = document.getElementById('assistantInput');
+      const assistantOutput = document.getElementById('assistantOutput');
+      const assistantStatus = document.getElementById('assistantStatus');
+      const backendUrlInput = document.getElementById('backendUrlInput');
+      const createScriptsBtn = document.getElementById('createScriptsBtn');
+      const runAllBtn = document.getElementById('runAllBtn');
+      const chatReplyBtn = document.getElementById('chatReplyBtn');
+      const chatExecBtn = document.getElementById('chatExecBtn');
+      const copyBtn = document.getElementById('copyBtn');
+      const chatHistory = [];
+
+      if (window.location.protocol === 'file:') {
+        assistantStatus.textContent = 'Open via server: python agent_box_server.py --port 8010';
+      }
+
+      const savedBase = localStorage.getItem('agent_backend_base_url');
+      if (savedBase) {
+        backendUrlInput.value = savedBase;
+      }
+      backendUrlInput.addEventListener('change', () => {
+        localStorage.setItem('agent_backend_base_url', backendUrlInput.value.trim() || 'auto');
+      });
+
+      const readNumber = (text, fallback) => {
+        const match = text.match(/\b(\d{1,5})\b/);
+        return match ? Number(match[1]) : fallback;
+      };
+
+      const detectDurationSeconds = (text) => {
+        const minMatch = text.match(/(\d{1,4})\s*(min|mins|minute|minutes)\b/i);
+        if (minMatch) {
+          return Number(minMatch[1]) * 60;
+        }
+        const hourMatch = text.match(/(\d{1,3})\s*(hr|hrs|hour|hours)\b/i);
+        if (hourMatch) {
+          return Number(hourMatch[1]) * 3600;
+        }
+        const secMatch = text.match(/(\d{1,6})\s*(sec|secs|second|seconds)\b/i);
+        if (secMatch) {
+          return Number(secMatch[1]);
+        }
+        return 1800;
+      };
+
+      const inferScenario = (input) => {
+        const lower = input.toLowerCase();
+        const users = lower.includes('users') ? readNumber(lower, 100) : 100;
+        const ramp = lower.includes('ramp') ? readNumber(lower.split('ramp')[1] || '', 120) : 120;
+        const duration = detectDurationSeconds(lower);
+        const app = lower.includes('petstore') ? 'PetStore' : 'MyApp';
+        const hasLogin = lower.includes('login');
+        const hasSearch = lower.includes('search');
+        const hasCheckout = lower.includes('checkout');
+
+        const transactions = ['Launch'];
+        if (hasLogin) transactions.push('Login');
+        if (hasSearch) transactions.push('Search');
+        if (hasCheckout) transactions.push('Checkout');
+        if (transactions.length === 1) transactions.push('Login', 'Search');
+
+        return { users, ramp, duration, app, transactions };
+      };
+
+      const renderScenarioAnswer = (raw) => {
+        const cfg = inferScenario(raw || '');
+        const txList = cfg.transactions.join(',');
+        const templateCmd =
+          `python -m perf_agent.agent scenario-template --out scenario.yaml --application "${cfg.app}" --threads ${cfg.users} --ramp ${cfg.ramp} --duration ${cfg.duration}`;
+        const createCmd =
+          'python -m perf_agent.agent create-scenario --scenario scenario.yaml --out scenario_generated.jmx';
+        const runCmd =
+          'python -m perf_agent.agent run-local --jmx scenario_generated.jmx --jtl results.jtl';
+        const reportCmd =
+          'python -m perf_agent.agent report --jtl results.jtl --out perf_report.md --sla-p95-ms 800 --sla-error-rate 1';
+
+        return (
+          `Detected scenario:\n` +
+          `- app: ${cfg.app}\n` +
+          `- users: ${cfg.users}\n` +
+          `- ramp: ${cfg.ramp}s\n` +
+          `- duration: ${cfg.duration}s\n` +
+          `- transactions: ${txList}\n\n` +
+          `Suggested execution:\n` +
+          `${templateCmd}\n` +
+          `${createCmd}\n` +
+          `${runCmd}\n` +
+          `${reportCmd}\n`
+        );
+      };
+
+      const setBusy = (busy) => {
+        createScriptsBtn.disabled = busy;
+        runAllBtn.disabled = busy;
+        chatReplyBtn.disabled = busy;
+        chatExecBtn.disabled = busy;
+        copyBtn.disabled = busy;
+      };
+
+      const renderServerResult = (data) => {
+        const req = data.request || {};
+        const files = (data.generated_files || []).map((f) => `- ${f}`).join('\n');
+        const cmds = (data.next_commands || []).join('\n');
+        const warning = data.warning ? `\nWarning: ${data.warning}\n` : '';
+        return (
+          `Status: ${data.status}\n` +
+          `Lifecycle: ${data.lifecycle}\n` +
+          `Application: ${req.application || 'n/a'}\n` +
+          `Users: ${req.users || 'n/a'}\n` +
+          `Ramp: ${req.ramp_seconds || 'n/a'} sec\n` +
+          `Duration: ${req.duration_seconds || 'n/a'} sec\n` +
+          `Transactions: ${(req.transactions || []).join(', ')}\n` +
+          `${warning}\n` +
+          `Generated files:\n${files}\n\n` +
+          `Next commands:\n${cmds}\n`
+        );
+      };
+
+      const renderChatResult = (data) => {
+        const scenario = data.scenario || {};
+        const scenarioBlock =
+          `Scenario:\n` +
+          `- application: ${scenario.application || 'n/a'}\n` +
+          `- domain: ${scenario.domain || 'n/a'}\n` +
+          `- users: ${scenario.users || 'n/a'}\n` +
+          `- ramp_seconds: ${scenario.ramp_seconds || 'n/a'}\n` +
+          `- duration_seconds: ${scenario.duration_seconds || 'n/a'}\n` +
+          `- transactions: ${(scenario.transactions || []).join(', ')}\n`;
+        const execBlock = data.execution && data.execution.status === 'ok'
+          ? `\nExecution:\n${renderServerResult(data.execution)}`
+          : (data.execution && data.execution.status === 'error'
+              ? `\nExecution error:\n${data.execution.error}\n`
+              : '');
+        return (
+          `ChatGPT (${data.model || 'model'}):\n` +
+          `${data.assistant_reply || ''}\n\n` +
+          `Action: ${data.action || 'none'}\n` +
+          `${scenarioBlock}` +
+          `${execBlock}`
+        );
+      };
+
+      const getBaseCandidates = () => {
+        const baseCandidates = [];
+        const manualBase = (backendUrlInput.value || '').trim();
+        if (manualBase && manualBase.toLowerCase() !== 'auto') {
+          baseCandidates.push(manualBase.replace(/\/+$/, ''));
+        } else {
+          if (window.location.protocol !== 'file:') {
+            baseCandidates.push(window.location.origin);
+          }
+          baseCandidates.push(
+            'http://127.0.0.1:8010',
+            'http://localhost:8010',
+            'http://127.0.0.1:8000',
+            'http://localhost:8000'
+          );
+        }
+        return { baseCandidates, manualBase };
+      };
+
+      const callApi = async (apiPath, payload) => {
+        const { baseCandidates, manualBase } = getBaseCandidates();
+        let successData = null;
+        let successUrl = '';
+        let lastError = 'No API endpoint tried.';
+
+        for (const base of baseCandidates) {
+          const healthUrl = `${base}/api/health`;
+          const url = `${base}${apiPath}`;
+          try {
+            if (manualBase.toLowerCase() === 'auto' || !manualBase) {
+              try {
+                const healthResp = await fetch(healthUrl, { method: 'GET' });
+                const healthType = (healthResp.headers.get('content-type') || '').toLowerCase();
+                const healthRaw = await healthResp.text();
+                if (!healthType.includes('application/json')) {
+                  lastError = `Endpoint ${base} is not agent backend`;
+                  continue;
+                }
+                const healthJson = JSON.parse(healthRaw);
+                if (healthJson.service !== 'agent-box-server') {
+                  lastError = `Endpoint ${base} is not agent backend`;
+                  continue;
+                }
+              } catch (healthErr) {
+                lastError = `Health check failed at ${base}: ${healthErr.message || healthErr}`;
+                continue;
+              }
+            }
+
+            const resp = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            const contentType = (resp.headers.get('content-type') || '').toLowerCase();
+            const raw = await resp.text();
+            if (!contentType.includes('application/json')) {
+              const firstLine = (raw || '').trim().split('\n')[0] || '';
+              lastError = `Endpoint ${url} returned non-JSON (${firstLine.slice(0, 80)})`;
+              continue;
+            }
+            const data = JSON.parse(raw);
+            if (!resp.ok || data.status !== 'ok') {
+              lastError = data.error || `Execution failed at ${url}`;
+              continue;
+            }
+            successData = data;
+            successUrl = url;
+            break;
+          } catch (err) {
+            lastError = `Endpoint ${url} failed: ${err.message || err}`;
+          }
+        }
+
+        if (!successData) {
+          throw new Error(`${lastError}\nStart backend: python agent_box_server.py --port 8010`);
+        }
+        return { data: successData, url: successUrl };
+      };
+
+      const callBackend = async (runFull) => {
+        const input = assistantInput.value.trim();
+        if (!input) {
+          assistantStatus.textContent = 'Enter a scenario first.';
+          return;
+        }
+        setBusy(true);
+        assistantStatus.textContent = runFull ? 'Running full lifecycle...' : 'Creating scripts...';
+        try {
+          const result = await callApi('/api/agent', { prompt: input, run_full: runFull });
+          assistantOutput.textContent = renderServerResult(result.data);
+          assistantStatus.textContent = runFull
+            ? `Completed via ${result.url}. Files generated and full lifecycle attempted.`
+            : `Scripts created via ${result.url}.`;
+        } catch (err) {
+          assistantOutput.textContent = `Execution error:\n${err.message || err}`;
+          assistantStatus.textContent = 'Backend not reachable. Start: python agent_box_server.py --port 8010';
+        } finally {
+          setBusy(false);
+        }
+      };
+
+      const callChat = async (execute) => {
+        const input = assistantInput.value.trim();
+        if (!input) {
+          assistantStatus.textContent = 'Enter a scenario first.';
+          return;
+        }
+        setBusy(true);
+        assistantStatus.textContent = execute ? 'ChatGPT is executing workflow...' : 'ChatGPT is thinking...';
+        try {
+          const messages = [...chatHistory, { role: 'user', content: input }];
+          const result = await callApi('/api/chat', {
+            messages,
+            execute,
+            run_full: false,
+          });
+          chatHistory.push({ role: 'user', content: input });
+          if (result.data.assistant_reply) {
+            chatHistory.push({ role: 'assistant', content: result.data.assistant_reply });
+          }
+          assistantOutput.textContent = renderChatResult(result.data);
+          assistantStatus.textContent = execute
+            ? `ChatGPT executed via ${result.url}.`
+            : `ChatGPT replied via ${result.url}.`;
+        } catch (err) {
+          assistantOutput.textContent = `Execution error:\n${err.message || err}`;
+          assistantStatus.textContent = 'ChatGPT backend not reachable or OPENAI_API_KEY missing.';
+        } finally {
+          setBusy(false);
+        }
+      };
+
+      chatReplyBtn.addEventListener('click', () => callChat(false));
+      chatExecBtn.addEventListener('click', () => callChat(true));
+
+      createScriptsBtn.addEventListener('click', () => callBackend(false));
+      runAllBtn.addEventListener('click', () => callBackend(true));
+
+      copyBtn.addEventListener('click', async () => {
+        const text = assistantOutput.textContent || '';
+        try {
+          await navigator.clipboard.writeText(text);
+          assistantStatus.textContent = 'Output copied to clipboard.';
+        } catch (err) {
+          assistantStatus.textContent = 'Copy failed in this browser. Select and copy manually.';
+        }
+      });
+
+      assistantToggle.addEventListener('click', () => {
+        const collapsed = assistantBox.classList.toggle('collapsed');
+        assistantToggle.textContent = collapsed ? 'Show' : 'Hide';
+      });
+    })();
+  </script>
+</body>
+</html>
